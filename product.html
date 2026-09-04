@@ -80,14 +80,14 @@
           class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none"></div>
 
         <button id="prevSlideBtn"
-          class="hidden absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity"
+          class="hidden absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity"
           aria-label="Предыдущее фото">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
         <button id="nextSlideBtn"
-          class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity"
+          class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity"
           aria-label="Следующее фото">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 18l6-6-6-6" />
@@ -98,7 +98,7 @@
         </div>
 
         <div id="slideCounter"
-          class="hidden absolute top-3 right-3 bg-black/60 text-white text-[11px] px-2.5 py-0.5 rounded-full z-20 pointer-events-none">
+          class="hidden absolute top-3 right-3 text-white text-[18px] px-2.5 py-0.5 rounded-full z-20 pointer-events-none">
         </div>
       </div>
     </div>
@@ -106,12 +106,13 @@
       <div>
         <div id="prodCategory" class="text-[12px] font-regular lowercase text-gray-400 mb-1"></div>
         <div class="flex justify-between items-start gap-4">
-          <h1 id="prodName" class="text-2xl font-bold lowercase leading-tight"></h1>
-          <span id="prodPrice" class="text-lg font-bold whitespace-nowrap pt-1"></span>
+          <h1 id="prodName" class="text-xl sm:text-2xl font-bold leading-tight"></h1>
+          <span id="prodPrice" class="text-base sm:text-lg font-bold whitespace-nowrap pt-1"></span>
         </div>
+        <div id="prodMeta" class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-3 pb-1 border-t border-black mt-3"></div>
       </div>
 
-      <p id="prodDescription" class="text-[13px] leading-relaxed py-2 text-gray-600 border-t-2 border-black pb-4"></p>
+      <p id="prodDescription" class="text-[13px] leading-relaxed py-2 text-gray-600 pb-4"></p>
 
       <div data-acc data-open="true" class="border-b border-gray-200">
         <button data-acc-trigger

@@ -1,4 +1,4 @@
-import { getProducts, showToast, esc } from "./firebase.js";
+import { getProducts, showToast, esc, getPriceUnit, formatPrice } from "./firebase.js";
 
 let allProducts = [];
 let filtered = [];
@@ -84,9 +84,12 @@ function renderGrid(products) {
       e.stopPropagation();
       const id = btn.dataset.cart;
       const p = allProducts.find(x => x.id === id);
-      const name = p?.name || "";
-      const price = p?.price ? p.price + " ₽/шт." : "";
-      const msg = encodeURIComponent(`Здравствуйте! Меня интересует товар: ${name}${price ? " (цена: " + price + ")" : ""}. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`);
+      if (!p || p.status === "продано") return;
+      const name = p.name || "";
+      const price = formatPrice(p);
+      const qty = p.quantity ? `, кол-во: ${p.quantity} шт.` : "";
+      const cond = p.condition ? `, состояние: ${p.condition}` : "";
+      const msg = encodeURIComponent(`Здравствуйте! Меня интересует товар: ${name}${price ? " (цена: " + price + ")" : ""}${qty}${cond}. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`);
       window.open(`https://t.me/ChePo4em_1?text=${msg}`, "_blank");
     });
   });
@@ -111,6 +114,9 @@ function cardHTML(p, i) {
 
   const cartIcon = `<img src="cart.svg" alt="купить" class="w-[20px] h-[20px]${sold ? " opacity-50" : ""}">`;
 
+  const priceStr = formatPrice(p);
+  const productType = p.type || p.category || "одежда";
+
   return `
 <div data-card="${p.id}" class="group bg-white flex flex-col ${sold ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}" style="animation: fadeIn 0.4s ${delay}ms both">
   <div class="relative bg-gray-100 aspect-[3/4] overflow-hidden">
@@ -120,9 +126,9 @@ function cardHTML(p, i) {
   </div>
   <div class="flex items-start justify-between gap-2 pt-2">
     <div class="flex flex-col">
-      <div class="text-[13px] lowercase text-gray-400">${esc(p.category || "одежда")}</div>
-      <div class="text-[16px] font-bold lowercase mb-1">${esc(p.name)}</div>
-      <div class="text-[16px] font-semibold">${p.price ? p.price + " ₽/шт." : ""}</div>
+      <div class="text-[13px] lowercase text-gray-400">${esc(productType)}</div>
+      <div class="text-[14px] sm:text-[16px] font-bold mb-1 leading-snug">${esc(p.name)}</div>
+      <div class="text-[16px] font-semibold">${esc(priceStr)}</div>
     </div>
     <button data-cart="${p.id}" ${sold ? "disabled" : ""}
       class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center ${sold ? "bg-gray-400 cursor-not-allowed" : "bg-black"}"
@@ -161,12 +167,15 @@ function applyFilters() {
     }
     if (filters.type && p.type !== filters.type) return false;
     if (filters.priceRanges.length) {
-      const pr = Number(p.price) || 0;
+      let unitPrice = Number(p.price) || 0;
+      if (getPriceUnit(p) === "лот" && p.quantity && Number(p.quantity) > 0) {
+        unitPrice = unitPrice / Number(p.quantity);
+      }
       if (
         !filters.priceRanges.some((r) => {
-          if (r === "under100") return pr < 100;
-          if (r === "100to500") return pr >= 100 && pr <= 500;
-          if (r === "over500") return pr > 500;
+          if (r === "under100") return unitPrice < 100;
+          if (r === "100to500") return unitPrice >= 100 && unitPrice <= 500;
+          if (r === "over500") return unitPrice > 500;
           return true;
         })
       )

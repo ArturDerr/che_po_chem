@@ -3,6 +3,7 @@ import {
   addProduct, updateProduct, deleteProduct, getProducts,
   filesToBase64,
   showToast, esc,
+  getPriceUnit, formatPrice,
   signInWithEmailAndPassword, signOut, onAuthStateChanged
 } from "./firebase.js";
 
@@ -51,8 +52,7 @@ function renderProductList() {
       ? `<img src="${p.images[0]}" class="w-44 h-40 object-cover bg-gray-100 rounded flex-shrink-0">`
       : `<div class="w-14 h-20 bg-gray-100 rounded flex-shrink-0 flex items-center justify-center text-gray-300 text-[10px]">нет</div>`;
     const sold = p.status === "продано";
-    const unit = p.priceUnit || "шт.";
-    const priceText = p.price ? `${p.price} ₽/${unit}` : "";
+    const priceText = formatPrice(p);
     return `
 <div class="flex items-center gap-4 rounded p-0 mb-2">
   ${img}
@@ -79,13 +79,16 @@ form?.addEventListener("submit", async e => {
 
   try {
     const priceVal = Number(v("fPrice")) || 0;
-    const priceUnit = v("fPriceUnit") || "шт.";
+    const priceUnit = v("fPriceUnit") === "лот" ? "лот" : "шт.";
+    const isLot = priceUnit === "лот";
     const data = {
       name: v("fName"),
       category: v("fCategory"),
       type: v("fType"),
       price: priceVal,
       priceUnit: priceUnit,
+      priceType: isLot ? "lot" : "unit",
+      isLot: isLot,
       priceLabel: priceVal ? `${priceVal} ₽/${priceUnit}` : "",
       status: v("fStatus"),
       location: v("fLocation"),
@@ -157,7 +160,7 @@ window.startEdit = function (id) {
   setVal("fCategory", p.category || "");
   setVal("fType", p.type || "");
   setVal("fPrice", p.price || "");
-  setVal("fPriceUnit", p.priceUnit || "шт.");
+  setVal("fPriceUnit", getPriceUnit(p));
   setVal("fStatus", p.status || "актуально");
   setVal("fLocation", p.location || "");
   setVal("fCondition", p.condition || "");

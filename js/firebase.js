@@ -121,10 +121,32 @@ function esc(str) {
     .replace(/"/g, "&quot;");
 }
 
+function getPriceUnit(p) {
+  if (!p) return "шт.";
+  const u = (p.priceUnit || p.unit || p.priceType || "").toString().trim().toLowerCase();
+  if (u === "лот" || u === "lot" || u.includes("лот") || u.includes("lot")) return "лот";
+  const label = (p.priceLabel || "").toString().toLowerCase();
+  if (label.includes("лот") || label.includes("lot")) return "лот";
+  if (p.isLot === true) return "лот";
+  const type = (p.type || "").toString().trim().toLowerCase();
+  const cat = (p.category || "").toString().trim().toLowerCase();
+  if (type === "лот" || type.includes("лот") || cat === "лот" || cat.includes("лот")) return "лот";
+  const name = (p.name || "").toString().trim().toLowerCase();
+  if (name.startsWith("лот ") || name.startsWith("лот:") || name === "лот") return "лот";
+  return "шт.";
+}
+
+function formatPrice(p) {
+  if (!p || p.price === undefined || p.price === null || p.price === "") return "";
+  const unit = getPriceUnit(p);
+  return `${p.price} ₽/${unit}`;
+}
+
 export {
   db, auth,
   getProducts, getProduct, addProduct, updateProduct, deleteProduct,
   filesToBase64,
   showToast, esc,
+  getPriceUnit, formatPrice,
   signInWithEmailAndPassword, signOut, onAuthStateChanged
 };

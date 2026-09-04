@@ -1,4 +1,4 @@
-import { getProduct, getProducts, showToast, esc } from "./firebase.js";
+import { getProduct, getProducts, showToast, esc, getPriceUnit, formatPrice } from "./firebase.js";
 
 const params = new URLSearchParams(location.search);
 const productId = params.get("id");
@@ -11,7 +11,6 @@ async function init() {
 
   document.title = `${p.name} — #ЧЁпоЧЁМ`;
 
-  // --- Gallery ---
   const thumbStrip = document.getElementById("thumbStrip");
   const slider = document.getElementById("gallerySlider");
   const slideCounter = document.getElementById("slideCounter");
@@ -131,27 +130,63 @@ async function init() {
   }
 
   // --- Info ---
-  document.getElementById("prodCategory").textContent = p.category || "одежда";
+  document.getElementById("prodCategory").textContent = p.type || p.category || "одежда";
   document.getElementById("prodName").textContent = p.name;
-  
-  const unit = p.priceUnit || "шт.";
-  document.getElementById("prodPrice").textContent = p.price ? `${p.price} ₽/${unit}` : "";
+
+  const priceStr = formatPrice(p);
+  document.getElementById("prodPrice").textContent = priceStr;
 
   const metaEl = document.getElementById("prodMeta");
   if (metaEl) {
-    const metaParts = [];
-    if (p.quantity) metaParts.push(`<span>Количество: <b>${p.quantity} шт.</b></span>`);
-    if (p.condition) metaParts.push(`<span>Состояние: <b>${esc(p.condition)}</b></span>`);
-    if (p.location) metaParts.push(`<span>Локация: <b>${esc(p.location)}</b></span>`);
-    metaEl.innerHTML = metaParts.join('<span class="text-gray-300">|</span>');
+    const metaBlocks = [];
+    if (p.quantity) {
+      metaBlocks.push(`
+        <div class="flex flex-col">
+          <span class="text-[11px] text-gray-400">Количество</span>
+          <span class="text-[15px] sm:text-[16px] font-medium text-black mt-0.5">${p.quantity} шт.</span>
+        </div>
+      `);
+    }
+    if (p.condition) {
+      metaBlocks.push(`
+        <div class="flex flex-col">
+          <span class="text-[11px] text-gray-400">Состояние</span>
+          <span class="text-[15px] sm:text-[16px] font-medium text-black mt-0.5">${esc(p.condition)}</span>
+        </div>
+      `);
+    }
+    if (p.location) {
+      metaBlocks.push(`
+        <div class="flex flex-col">
+          <span class="text-[11px] text-gray-400">Локация</span>
+          <span class="text-[15px] sm:text-[16px] font-medium text-black mt-0.5">${esc(p.location)}</span>
+        </div>
+      `);
+    }
+    if (p.type) {
+      metaBlocks.push(`
+        <div class="flex flex-col">
+          <span class="text-[11px] text-gray-400">Тип</span>
+          <span class="text-[15px] sm:text-[16px] font-medium text-black mt-0.5">${esc(p.type)}</span>
+        </div>
+      `);
+    }
+
+    if (metaBlocks.length) {
+      metaEl.innerHTML = metaBlocks.join("");
+      metaEl.style.display = "";
+    } else {
+      metaEl.style.display = "none";
+    }
   }
 
   document.getElementById("prodDescription").textContent = p.description || "";
 
   // --- Characteristics ---
   const charList = document.getElementById("charList");
-  if (p.characteristics?.length) {
-    charList.innerHTML = p.characteristics.map(c => `<li class="text-[13px] text-gray-600 leading-relaxed">${esc(c)}</li>`).join("");
+  const charItems = [...(p.characteristics || [])];
+  if (charItems.length) {
+    charList.innerHTML = charItems.map(c => `<li class="text-[13px] text-gray-600 leading-relaxed">${esc(c)}</li>`).join("");
   } else {
     charList.innerHTML = `<li class="text-[13px] text-gray-400">Не указано</li>`;
   }
@@ -162,13 +197,12 @@ async function init() {
   // --- Buy button ---
   const name = p.name || "";
   const category = p.category || "";
-  const price = p.price ? `${p.price} ₽/${unit}` : "";
   const qty = p.quantity ? `, кол-во: ${p.quantity} шт.` : "";
   const cond = p.condition ? `, состояние: ${p.condition}` : "";
   const msg = encodeURIComponent(
     `Здравствуйте! Меня интересует товар: ${name}` +
     (category ? ` (${category})` : "") +
-    (price ? `, цена: ${price}` : "") +
+    (priceStr ? `, цена: ${priceStr}` : "") +
     qty + cond +
     `. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`
   );
@@ -194,10 +228,34 @@ async function init() {
 async function loadRelated(current) {
   try {
     const all = await getProducts();
-    const related = all.filter(p => p.id !== current.id && (p.category === current.category || p.type === current.type)).slice(0, 4);
+    const curCat = (current.category || "").trim().toLowerCase();
+    const curType = (current.type || "").trim().toLowerCase();
+
+    // 1. Похожие по категории или типу
+    let matching = all.filter(p => {
+      if (p.id === current.id) return false;
+      const pCat = (p.category || "").trim().toLowerCase();
+      const pType = (p.type || "").trim().toLowerCase();
+      return (curCat && pCat === curCat) || (curType && pType === curType);
+    });
+
+    // 2. Если меньше 4, дополняем другими товарами из базы
+    let related = [...matching];
+    if (related.length < 4) {
+      const others = all.filter(p => p.id !== current.id && !related.some(r => r.id === p.id));
+      related = [...related, ...others].slice(0, 4);
+    } else {
+      related = related.slice(0, 4);
+    }
+
+    const section = document.getElementById("relatedSection");
     const grid = document.getElementById("relatedGrid");
-    if (!related.length) { document.getElementById("relatedSection").style.display = "none"; return; }
-    
+    if (!related.length) {
+      if (section) section.style.display = "none";
+      return;
+    }
+    if (section) section.style.display = "";
+
     grid.innerHTML = related.map((p, i) => {
       const sold = p.status === "продано";
       const img = p.images?.[0];
@@ -217,13 +275,8 @@ async function loadRelated(current) {
 
       const cartIcon = `<img src="cart.svg" alt="купить" class="w-[20px] h-[20px]${sold ? " opacity-50" : ""}">`;
 
-      const relUnit = p.priceUnit || "шт.";
-      const relPrice = p.price ? `${p.price} ₽/${relUnit}` : "";
-      const relMeta = [
-        p.category || "одежда",
-        p.condition || "",
-        p.quantity ? `${p.quantity} шт.` : ""
-      ].filter(Boolean);
+      const relPrice = formatPrice(p);
+      const relType = p.type || p.category || "одежда";
 
       return `
 <div data-card="${p.id}" class="group bg-white flex flex-col ${sold ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}" style="animation: fadeIn 0.4s ${delay}ms both">
@@ -234,8 +287,8 @@ async function loadRelated(current) {
   </div>
   <div class="flex items-start justify-between gap-2 pt-2">
     <div class="flex flex-col">
-      <div class="text-[13px] lowercase text-gray-400">${esc(relMeta.join(" · "))}</div>
-      <div class="text-[16px] font-bold lowercase mb-1">${esc(p.name)}</div>
+      <div class="text-[13px] lowercase text-gray-400">${esc(relType)}</div>
+      <div class="text-[14px] sm:text-[16px] font-bold mb-1 leading-snug">${esc(p.name)}</div>
       <div class="text-[16px] font-semibold">${esc(relPrice)}</div>
     </div>
     <button data-cart="${p.id}" ${sold ? "disabled" : ""}
@@ -247,7 +300,6 @@ async function loadRelated(current) {
 </div>`;
     }).join("");
 
-    // Карточки - переход на страницу товара (если не распродано)
     grid.querySelectorAll("[data-card]").forEach((card) => {
       card.addEventListener("click", (e) => {
         if (e.target.closest("[data-cart]")) return;
@@ -257,7 +309,6 @@ async function loadRelated(current) {
       });
     });
 
-    // Кнопка корзины в карточке
     grid.querySelectorAll("[data-cart]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -265,8 +316,10 @@ async function loadRelated(current) {
         const p = related.find((x) => x.id === id);
         if (!p || p.status === "продано") return;
         const name = p.name || "";
-        const price = p.price ? p.price + " ₽/шт." : "";
-        const msg = encodeURIComponent(`Здравствуйте! Меня интересует товар: ${name}${price ? " (цена: " + price + ")" : ""}. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`);
+        const price = formatPrice(p);
+        const qty = p.quantity ? `, кол-во: ${p.quantity} шт.` : "";
+        const cond = p.condition ? `, состояние: ${p.condition}` : "";
+        const msg = encodeURIComponent(`Здравствуйте! Меня интересует товар: ${name}${price ? " (цена: " + price + ")" : ""}${qty}${cond}. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`);
         window.open(`https://t.me/ChePo4em_1?text=${msg}`, "_blank");
       });
     });
