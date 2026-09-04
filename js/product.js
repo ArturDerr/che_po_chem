@@ -133,7 +133,19 @@ async function init() {
   // --- Info ---
   document.getElementById("prodCategory").textContent = p.category || "одежда";
   document.getElementById("prodName").textContent = p.name;
-  document.getElementById("prodPrice").textContent = p.price ? p.price + " ₽/шт." : "";
+  
+  const unit = p.priceUnit || "шт.";
+  document.getElementById("prodPrice").textContent = p.price ? `${p.price} ₽/${unit}` : "";
+
+  const metaEl = document.getElementById("prodMeta");
+  if (metaEl) {
+    const metaParts = [];
+    if (p.quantity) metaParts.push(`<span>Количество: <b>${p.quantity} шт.</b></span>`);
+    if (p.condition) metaParts.push(`<span>Состояние: <b>${esc(p.condition)}</b></span>`);
+    if (p.location) metaParts.push(`<span>Локация: <b>${esc(p.location)}</b></span>`);
+    metaEl.innerHTML = metaParts.join('<span class="text-gray-300">|</span>');
+  }
+
   document.getElementById("prodDescription").textContent = p.description || "";
 
   // --- Characteristics ---
@@ -150,11 +162,14 @@ async function init() {
   // --- Buy button ---
   const name = p.name || "";
   const category = p.category || "";
-  const price = p.price ? p.price + " ₽/шт." : "";
+  const price = p.price ? `${p.price} ₽/${unit}` : "";
+  const qty = p.quantity ? `, кол-во: ${p.quantity} шт.` : "";
+  const cond = p.condition ? `, состояние: ${p.condition}` : "";
   const msg = encodeURIComponent(
     `Здравствуйте! Меня интересует товар: ${name}` +
     (category ? ` (${category})` : "") +
     (price ? `, цена: ${price}` : "") +
+    qty + cond +
     `. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`
   );
   document.getElementById("buyBtn").href = `https://t.me/ChePo4em_1?text=${msg}`;
@@ -202,6 +217,14 @@ async function loadRelated(current) {
 
       const cartIcon = `<img src="cart.svg" alt="купить" class="w-[20px] h-[20px]${sold ? " opacity-50" : ""}">`;
 
+      const relUnit = p.priceUnit || "шт.";
+      const relPrice = p.price ? `${p.price} ₽/${relUnit}` : "";
+      const relMeta = [
+        p.category || "одежда",
+        p.condition || "",
+        p.quantity ? `${p.quantity} шт.` : ""
+      ].filter(Boolean);
+
       return `
 <div data-card="${p.id}" class="group bg-white flex flex-col ${sold ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}" style="animation: fadeIn 0.4s ${delay}ms both">
   <div class="relative bg-gray-100 aspect-[3/4] overflow-hidden">
@@ -211,9 +234,9 @@ async function loadRelated(current) {
   </div>
   <div class="flex items-start justify-between gap-2 pt-2">
     <div class="flex flex-col">
-      <div class="text-[13px] lowercase text-gray-400">${esc(p.category || "одежда")}</div>
+      <div class="text-[13px] lowercase text-gray-400">${esc(relMeta.join(" · "))}</div>
       <div class="text-[16px] font-bold lowercase mb-1">${esc(p.name)}</div>
-      <div class="text-[16px] font-semibold">${p.price ? p.price + " ₽/шт." : ""}</div>
+      <div class="text-[16px] font-semibold">${esc(relPrice)}</div>
     </div>
     <button data-cart="${p.id}" ${sold ? "disabled" : ""}
       class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center ${sold ? "bg-gray-400 cursor-not-allowed" : "bg-black"}"

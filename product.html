@@ -64,7 +64,8 @@
           class="text-[15px] font-regular text-black hover:opacity-80 transition-opacity no-underline">контакты</a>
       </nav>
       <a href="index.html"
-        class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors" title="Назад в каталог">
+        class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        title="Назад в каталог">
         <img src="search.svg" alt="поиск" class="w-[18px] h-[18px]">
       </a>
     </div>
@@ -72,26 +73,33 @@
 
   <div class="max-w-[1300px] mx-auto px-2.5 sm:px-4 py-4 sm:py-10 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
     <div class="flex gap-3">
-      <!-- Desktop thumbnails only (hidden on mobile) -->
       <div id="thumbStrip" class="hidden md:flex flex-col gap-2 w-20 flex-shrink-0"></div>
-      
-      <!-- Main slider with left/right navigation -->
+
       <div class="flex-1 relative bg-gray-100 aspect-[3/4] overflow-hidden group">
-        <div id="gallerySlider" class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none"></div>
+        <div id="gallerySlider"
+          class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none"></div>
 
-        <!-- Left / Right arrows -->
-        <button id="prevSlideBtn" class="hidden absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity" aria-label="Предыдущее фото">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        <button id="prevSlideBtn"
+          class="hidden absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity"
+          aria-label="Предыдущее фото">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
-        <button id="nextSlideBtn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity" aria-label="Следующее фото">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        <button id="nextSlideBtn"
+          class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-black shadow flex items-center justify-center z-20 transition-opacity"
+          aria-label="Следующее фото">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
         </button>
 
-        <!-- Slide dots indicator -->
-        <div id="slideDots" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20"></div>
+        <div id="slideDots" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
+        </div>
 
-        <!-- Counter badge -->
-        <div id="slideCounter" class="hidden absolute top-3 right-3 bg-black/60 text-white text-[11px] px-2.5 py-0.5 rounded-full z-20 pointer-events-none"></div>
+        <div id="slideCounter"
+          class="hidden absolute top-3 right-3 bg-black/60 text-white text-[11px] px-2.5 py-0.5 rounded-full z-20 pointer-events-none">
+        </div>
       </div>
     </div>
     <div class="flex flex-col gap-4 pt-1 md:pt-2">

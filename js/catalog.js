@@ -2,7 +2,7 @@ import { getProducts, showToast, esc } from "./firebase.js";
 
 let allProducts = [];
 let filtered = [];
-let sortMode = "new"; // "new" | "old" | "cheap" | "expensive"
+let sortMode = "new";
 
 const filters = {
   search: "",
@@ -15,7 +15,6 @@ const filters = {
 
 const grid = document.getElementById("productGrid");
 
-// ---------- INIT ----------
 async function init() {
   renderSkeletons(9);
   try {
@@ -29,9 +28,7 @@ async function init() {
   }
 }
 
-// ---------- SELECTS ----------
 function populateSelects() {
-  // type is now hardcoded in HTML — only add unique values from DB that aren't already there
   const existingTypes = [
     ...document.querySelectorAll("#typeSelect option"),
   ].map((o) => o.value.toLowerCase());
@@ -66,7 +63,6 @@ function fill(id, opts, placeholder) {
     opts.map((o) => `<option value="${o}">${o}</option>`).join("");
 }
 
-// ---------- GRID ----------
 function renderGrid(products) {
   if (!products.length) {
     grid.innerHTML = `<div class="col-span-3 py-24 text-center text-gray-400 font-manrope text-sm">Товары не найдены</div>`;
@@ -78,7 +74,7 @@ function renderGrid(products) {
     card.addEventListener("click", (e) => {
       if (e.target.closest("[data-cart]")) return;
       const p = allProducts.find(x => x.id === card.dataset.card);
-      if (p?.status === "продано") return; // заблокировать переход
+      if (p?.status === "продано") return;
       window.location.href = `product.html?id=${card.dataset.card}`;
     });
   });
@@ -153,7 +149,6 @@ function renderSkeletons(n) {
     .join("");
 }
 
-// ---------- FILTERS ----------
 function applyFilters() {
   filtered = allProducts.filter((p) => {
     if (filters.search) {
@@ -214,7 +209,6 @@ function resetFilters() {
   applyFilters();
 }
 
-// ---------- FILTER ACCORDIONS ----------
 function initAccordions() {
   document.querySelectorAll("[data-filter-trigger]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -295,7 +289,6 @@ function initSearch() {
   }, 200));
 }
 
-// ---------- BIND ----------
 function bindControls() {
   document
     .getElementById("typeSelect")
@@ -325,7 +318,6 @@ function bindControls() {
     .getElementById("resetFilters")
     ?.addEventListener("click", resetFilters);
 
-  // Sort dropdown
   const sortBtn = document.getElementById("sortBtn");
   const sortMenu = document.getElementById("sortMenu");
 
@@ -337,7 +329,6 @@ function bindControls() {
   document.querySelectorAll(".sort-option").forEach((btn) => {
     btn.addEventListener("click", () => {
       sortMode = btn.dataset.sort;
-      // highlight active
       document
         .querySelectorAll(".sort-option")
         .forEach((b) => b.classList.remove("bg-gray-100", "font-extrabold"));
@@ -347,7 +338,6 @@ function bindControls() {
     });
   });
 
-  // close dropdown on outside click
   document.addEventListener("click", (e) => {
     if (!document.getElementById("sortDropdownWrap")?.contains(e.target)) {
       sortMenu?.classList.add("hidden");
@@ -369,7 +359,6 @@ document.addEventListener("DOMContentLoaded", () => {
   bindControls();
   init();
 
-  // Mobile filter toggle
   const mobileFilterBtn = document.getElementById("mobileFilterBtn");
   const mainSidebar = document.getElementById("mainSidebar");
   mobileFilterBtn?.addEventListener("click", () => {
@@ -377,7 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const isHidden = mainSidebar.classList.contains("hidden");
     mainSidebar.classList.toggle("hidden", !isHidden);
     mainSidebar.classList.toggle("lg:block", isHidden);
-    // On mobile show inline
     if (isHidden) {
       mainSidebar.classList.remove("hidden");
       mainSidebar.style.display = "block";
