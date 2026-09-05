@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /js/admin.js
+
+Sitemap: https://che-po-chem.vercel.app/sitemap.xml

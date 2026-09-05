@@ -9,7 +9,44 @@ async function init() {
   const p = await getProduct(productId);
   if (!p) { window.location.href = "index.html"; return; }
 
-  document.title = `${p.name} — #ЧЁпоЧЁМ`;
+  const productTitle = `${p.name} оптом — #ЧЁпоЧЁМ`;
+  const productDesc = `Купите ${p.name} оптом на #ЧЁпоЧЁМ. ${p.description ? p.description.slice(0, 120) + (p.description.length > 120 ? '...' : '') : 'Выгодные цены от поставщика. Свяжитесь через Telegram или WhatsApp.'}`;
+  const productUrl = `https://che-po-chem.vercel.app/product.html?id=${productId}`;
+  const productImg = p.images?.[0] || '';
+
+  document.title = productTitle;
+
+  const setMeta = (id, val) => { const el = document.getElementById(id); if (el) el.setAttribute(el.tagName === 'LINK' ? 'href' : 'content', val); };
+  setMeta('pageDesc', productDesc);
+  setMeta('pageCanonical', productUrl);
+  setMeta('ogUrl', productUrl);
+  setMeta('ogTitle', productTitle);
+  setMeta('ogDesc', productDesc);
+  setMeta('ogImage', productImg);
+  setMeta('twTitle', productTitle);
+  setMeta('twDesc', productDesc);
+  setMeta('twImage', productImg);
+
+  const schemaPrice = p.price ? String(p.price) : undefined;
+  const ldJson = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.name,
+    description: p.description || '',
+    image: p.images || [],
+    url: productUrl,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'RUB',
+      ...(schemaPrice ? { price: schemaPrice } : {}),
+      availability: p.status === 'продано' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+      seller: { '@type': 'Organization', name: '#ЧЁпоЧЁМ' }
+    }
+  };
+  const ldScript = document.createElement('script');
+  ldScript.type = 'application/ld+json';
+  ldScript.textContent = JSON.stringify(ldJson);
+  document.head.appendChild(ldScript);
 
   const thumbStrip = document.getElementById("thumbStrip");
   const slider = document.getElementById("gallerySlider");
@@ -129,7 +166,7 @@ async function init() {
     }
   }
 
-  // --- Info ---
+
   document.getElementById("prodCategory").textContent = p.type || p.category || "одежда";
   document.getElementById("prodName").textContent = p.name;
 
@@ -182,7 +219,7 @@ async function init() {
 
   document.getElementById("prodDescription").textContent = p.description || "";
 
-  // --- Characteristics ---
+
   const charList = document.getElementById("charList");
   const charItems = [...(p.characteristics || [])];
   if (charItems.length) {
@@ -191,10 +228,10 @@ async function init() {
     charList.innerHTML = `<li class="text-[13px] text-gray-400">Не указано</li>`;
   }
 
-  // --- Extra info ---
+
   document.getElementById("extraInfo").textContent = p.extraInfo || "Не указано";
 
-  // --- Buy button ---
+
   const name = p.name || "";
   const category = p.category || "";
   const qty = p.quantity ? `, кол-во: ${p.quantity} шт.` : "";
@@ -206,9 +243,9 @@ async function init() {
     qty + cond +
     `. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`
   );
-  document.getElementById("buyBtn").href = `https://t.me/ChePo4em_1?text=${msg}`;
+  document.getElementById("buyBtn").href = `https://t.me/NegogaiMoney?text=${msg}`;
 
-  // --- Accordion logic ---
+
   document.querySelectorAll("[data-acc-trigger]").forEach(btn => {
     const item = btn.closest("[data-acc]");
     const content = item?.querySelector("[data-acc-content]");
@@ -221,7 +258,7 @@ async function init() {
     });
   });
 
-  // --- Related products ---
+
   loadRelated(p);
 }
 
@@ -231,7 +268,7 @@ async function loadRelated(current) {
     const curCat = (current.category || "").trim().toLowerCase();
     const curType = (current.type || "").trim().toLowerCase();
 
-    // 1. Похожие по категории или типу
+
     let matching = all.filter(p => {
       if (p.id === current.id) return false;
       const pCat = (p.category || "").trim().toLowerCase();
@@ -239,7 +276,7 @@ async function loadRelated(current) {
       return (curCat && pCat === curCat) || (curType && pType === curType);
     });
 
-    // 2. Если меньше 4, дополняем другими товарами из базы
+
     let related = [...matching];
     if (related.length < 4) {
       const others = all.filter(p => p.id !== current.id && !related.some(r => r.id === p.id));
@@ -320,7 +357,7 @@ async function loadRelated(current) {
         const qty = p.quantity ? `, кол-во: ${p.quantity} шт.` : "";
         const cond = p.condition ? `, состояние: ${p.condition}` : "";
         const msg = encodeURIComponent(`Здравствуйте! Меня интересует товар: ${name}${price ? " (цена: " + price + ")" : ""}${qty}${cond}. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`);
-        window.open(`https://t.me/ChePo4em_1?text=${msg}`, "_blank");
+        window.open(`https://t.me/NegogaiMoney?text=${msg}`, "_blank");
       });
     });
   } catch (e) {

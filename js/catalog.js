@@ -90,7 +90,7 @@ function renderGrid(products) {
       const qty = p.quantity ? `, кол-во: ${p.quantity} шт.` : "";
       const cond = p.condition ? `, состояние: ${p.condition}` : "";
       const msg = encodeURIComponent(`Здравствуйте! Меня интересует товар: ${name}${price ? " (цена: " + price + ")" : ""}${qty}${cond}. Хочу узнать подробнее об оптовых условиях. Увидел(а) на сайте #ЧЁпоЧЁМ.`);
-      window.open(`https://t.me/ChePo4em_1?text=${msg}`, "_blank");
+      window.open(`https://t.me/NegogaiMoney?text=${msg}`, "_blank");
     });
   });
 }
