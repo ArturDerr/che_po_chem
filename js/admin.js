@@ -59,7 +59,6 @@ function renderProductList() {
   <div class="flex-1 min-w-0">
     <div class="font-bold text-sm truncate">${esc(p.name)}</div>
     <div class="text-xs text-gray-400 mt-0.5">${esc(p.category)} / ${esc(priceText)} / <span class="${sold ? 'text-red-400' : 'text-green-500'}">${esc(p.status || "актуально")}</span></div>
-    <div class="text-xs text-gray-400">${esc(p.type || "")} ${p.condition ? '· ' + esc(p.condition) : ''} ${p.quantity ? '· ' + p.quantity + ' шт.' : ''} ${p.location ? '· ' + esc(p.location) : ''}</div>
   </div>
   <div class="flex gap-2 flex-shrink-0">
     <button onclick="startEdit('${p.id}')" class="text-[11px] font-semibold px-3 py-1.5 hover:bg-black hover:text-white transition-colors rounded-sm">Ред.</button>
